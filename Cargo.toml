@@ -1,0 +1,27 @@
+[package]
+name = "pwsh_utf8_wrapper"
+version = "0.1.0"
+edition = "2024"
+description = "UTF-8 console wrapper around the real pwsh.exe for the OpenCode shell tool on Windows"
+license = "MIT"
+
+# The binary MUST be named `pwsh` (=> pwsh.exe on Windows).
+# OpenCode routes shells by executable basename (packages/core/src/shell.ts, META table):
+# only `pwsh`/`powershell` take the PowerShell argv branch
+# (`-NoLogo -NoProfile -NonInteractive -Command <cmd>`), which this wrapper
+# forwards 1:1. Any other file name lands in the generic `cmd /d /s /c`
+# branch and breaks the contract.
+[[bin]]
+name = "pwsh"
+path = "src/main.rs"
+
+[profile.release]
+# Max speed…
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+# …and max reliability/size: no unwind tables, no debug symbols in the binary.
+# (debug-assertions and overflow-checks stay at their release defaults: off.
+#  The code additionally avoids all panic paths by construction.)
+panic = "abort"
+strip = true

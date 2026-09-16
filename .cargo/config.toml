@@ -1,0 +1,5 @@
+# Static CRT linkage for the MSVC target.
+# The resulting pwsh.exe runs on other Windows machines without requiring
+# the Visual C++ Redistributable to be installed (portability requirement).
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]
