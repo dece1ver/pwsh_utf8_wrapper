@@ -56,6 +56,8 @@ fn main() {
     let args: Vec<OsString> = env::args_os().skip(1).collect();
     match Command::new(&real)
         .args(&args)
+        .env("PYTHONUTF8", "1")
+        .env("PYTHONIOENCODING", "utf-8")
         .stdin(Stdio::inherit())
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
