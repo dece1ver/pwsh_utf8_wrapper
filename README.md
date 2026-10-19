@@ -102,18 +102,6 @@ irm https://raw.githubusercontent.com/dece1ver/pwsh_utf8_wrapper/main/scripts/in
 `%USERPROFILE%\.config\opencode\bin\pwsh.exe`, сделает бэкап `opencode.json`
 и добавит ключ `"shell"`. После — перезапустите сессию opencode.
 
-Через cargo (без скачивания релиза, без конфликта с обычным pwsh):
-
-```powershell
-cargo install --git https://github.com/dece1ver/pwsh_utf8_wrapper.git --root "$env:USERPROFILE\.config\opencode"
-& "$env:USERPROFILE\.config\opencode\bin\pwsh.exe" --install
-```
-
-`--root` ставит бинарник в отдельный каталог (не в PATH), поэтому обычный `pwsh`
-в терминале продолжает указывать на настоящий PowerShell. Не используйте
-`cargo install` без `--root` — он положит `pwsh.exe` в `~/.cargo/bin` (в PATH)
-и перехватит запуск обычного pwsh.
-
 Для удаления:
 
 ```powershell
