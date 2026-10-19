@@ -65,7 +65,10 @@ if ($FromSource) {
 } else {
     $asset = "pwsh.exe"
     if ($Version -eq "latest") {
-        $url = "https://github.com/$repo/releases/latest/download/$asset"
+        $latest = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases/latest" -UseBasicParsing
+        $tag = $latest.tag_name
+        $url = "https://github.com/$repo/releases/download/$tag/$asset"
+        Write-Host "[install.ps1] последний релиз: $tag"
     } else {
         $url = "https://github.com/$repo/releases/download/$Version/$asset"
     }
