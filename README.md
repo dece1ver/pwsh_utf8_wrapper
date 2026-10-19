@@ -90,6 +90,54 @@ copy target\release\pwsh.exe %USERPROFILE%\.config\opencode\bin\pwsh.exe
 (собран x86_64). Настоящий `pwsh` на новой машине найдётся сам
 (PATH → ProgramFiles → Store → fallback powershell 5.1).
 
+### Автоустановка (one-liner)
+
+Самый простой путь — скачать и запустить установщик одной командой (PowerShell 7):
+
+```powershell
+irm https://raw.githubusercontent.com/dece1ver/pwsh_utf8_wrapper/main/scripts/install.ps1 | iex
+```
+
+Установщик скачает последний релиз `pwsh.exe`, положит в
+`%USERPROFILE%\.config\opencode\bin\pwsh.exe`, сделает бэкап `opencode.json`
+и добавит ключ `"shell"`. После — перезапустите сессию opencode.
+
+Через cargo (без скачивания релиза, без конфликта с обычным pwsh):
+
+```powershell
+cargo install --git https://github.com/dece1ver/pwsh_utf8_wrapper.git --root "$env:USERPROFILE\.config\opencode"
+& "$env:USERPROFILE\.config\opencode\bin\pwsh.exe" --install
+```
+
+`--root` ставит бинарник в отдельный каталог (не в PATH), поэтому обычный `pwsh`
+в терминале продолжает указывать на настоящий PowerShell. Не используйте
+`cargo install` без `--root` — он положит `pwsh.exe` в `~/.cargo/bin` (в PATH)
+и перехватит запуск обычного pwsh.
+
+Для удаления:
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/dece1ver/pwsh_utf8_wrapper/main/scripts/install.ps1))) -Uninstall
+```
+
+Или локально из клона репозитория:
+
+```powershell
+.\scripts\install.ps1 -FromSource
+.\scripts\install.ps1 -Uninstall
+```
+
+Сам бинарник тоже умеет устанавливать/удалять себя:
+
+```cmd
+%USERPROFILE%\.config\opencode\bin\pwsh.exe --install
+%USERPROFILE%\.config\opencode\bin\pwsh.exe --uninstall
+%USERPROFILE%\.config\opencode\bin\pwsh.exe --status
+%USERPROFILE%\.config\opencode\bin\pwsh.exe --help
+```
+
+Опции: `--bin-dir <путь>`, `--config <путь>`, `--dry-run`, `--force`.
+
 ---
 
 ## ИНСТРУКЦИЯ ДЛЯ АГЕНТА (внедрение в opencode)

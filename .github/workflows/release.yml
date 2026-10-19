@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to create (e.g. v0.1.1)"
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Build (release, static CRT)
+        run: cargo build --release
+
+      - name: Checksum
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash target/release/pwsh.exe -Algorithm SHA256).Hash
+          "$hash  pwsh.exe" | Out-File -Encoding ascii pwsh.exe.sha256
+          Get-Content pwsh.exe.sha256
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          files: |
+            target/release/pwsh.exe
+            pwsh.exe.sha256
+          generate_release_notes: true
