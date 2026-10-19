@@ -243,7 +243,11 @@ fn cmd_install(opts: InstallOpts) -> i32 {
     } else {
         if !opts.dry_run {
             if target.exists() {
-                let _ = fs::remove_file(&target);
+                // On Windows a running pwsh.exe cannot be overwritten, but it
+                // can usually be renamed. Rename first to allow upgrade-in-place.
+                let old = bin_dir.join("pwsh.exe.old");
+                let _ = fs::remove_file(&old);
+                let _ = fs::rename(&target, &old);
             }
             if let Err(e) = fs::copy(&self_path, &target) {
                 eprintln!("[install] cannot copy to {}: {e}", target.display());
