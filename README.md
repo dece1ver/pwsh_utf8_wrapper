@@ -126,6 +126,49 @@ irm https://raw.githubusercontent.com/dece1ver/pwsh_utf8_wrapper/main/scripts/in
 
 Опции: `--bin-dir <путь>`, `--config <путь>`, `--dry-run`, `--force`.
 
+### Проверка (до и после)
+
+До установки (или после отката, когда `"shell"` убран из конфига) команда
+с кириллицей в stdout приходит с кракозябрами/`�`:
+
+```powershell
+# в shell OpenCode, без "shell" в конфиге:
+pwsh -NoLogo -NoProfile -NonInteractive -Command "Write-Output 'Привет'"
+# ожидается: ��� / мусор вместо «Привет»
+```
+
+После установки и перезапуска сессии opencode — корректный текст:
+
+```powershell
+# в shell OpenCode, с "shell" в конфиге:
+pwsh -NoLogo -NoProfile -NonInteractive -Command "Write-Output 'Привет'"
+# ожидается: Привет
+```
+
+Проверка exit code (должен пробрасываться 1:1):
+
+```powershell
+pwsh -NoLogo -NoProfile -NonInteractive -Command "exit 3"
+# ожидается: код выхода 3
+```
+
+Headless-стенд (без OpenCode), Node-реплика спавна:
+
+```js
+const { spawn } = require('child_process');
+const p = spawn(process.env.USERPROFILE + '/.config/opencode/bin/pwsh.exe',
+  ['-NoLogo','-NoProfile','-NonInteractive','-Command','Write-Output "Привет"'],
+  { stdio: ['ignore','pipe','pipe'] });
+p.stdout.on('data', d => console.log('stdout:', d.toString('utf8')));
+p.on('exit', c => console.log('exit:', c));
+```
+
+Ожидается `stdout: Привет` и `exit: 0`. До фикса в stdout были байты CP866
+(`8FE0…`), декодирование давало `�`.
+
+Негативный контроль: временно убрать `"shell"` из `opencode.json`, перезапустить
+сессию — баг должен вернуться; вернуть строку обратно.
+
 ---
 
 ## ИНСТРУКЦИЯ ДЛЯ АГЕНТА (внедрение в opencode)
