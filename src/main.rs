@@ -244,10 +244,18 @@ fn cmd_install(opts: InstallOpts) -> i32 {
         if !opts.dry_run {
             if target.exists() {
                 // On Windows a running pwsh.exe cannot be overwritten, but it
-                // can usually be renamed. Rename first to allow upgrade-in-place.
-                let old = bin_dir.join("pwsh.exe.old");
-                let _ = fs::remove_file(&old);
-                let _ = fs::rename(&target, &old);
+                // can usually be renamed. Use a unique backup name to avoid
+                // collisions with leftover .old files.
+                let ts = SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_secs();
+                let old = bin_dir.join(format!("pwsh.exe.old.{}", ts));
+                if let Err(e) = fs::rename(&target, &old) {
+                    eprintln!("[install] warning: cannot rename existing {}: {e}", target.display());
+                } else {
+                    println!("[install] moved existing binary to {}", old.display());
+                }
             }
             if let Err(e) = fs::copy(&self_path, &target) {
                 eprintln!("[install] cannot copy to {}: {e}", target.display());
